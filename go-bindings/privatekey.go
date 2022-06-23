@@ -58,6 +58,7 @@ func (sk *PrivateKey) G1Element() (*G1Element, error) {
 		return nil, errFromC()
 	}
 	runtime.SetFinalizer(&el, func(el *G1Element) { el.free() })
+	runtime.KeepAlive(sk)
 	return &el, nil
 }
 
@@ -72,6 +73,7 @@ func (sk *PrivateKey) G2Element() (*G2Element, error) {
 	if bool(cDidErr) {
 		return nil, errFromC()
 	}
+	runtime.KeepAlive(sk)
 	return &el, nil
 }
 
@@ -82,6 +84,8 @@ func (sk *PrivateKey) G2Power(el *G2Element) *G2Element {
 		val: C.CPrivateKeyGetG2Power(sk.val, el.val),
 	}
 	runtime.SetFinalizer(&sig, func() { sig.free() })
+	runtime.KeepAlive(sk)
+	runtime.KeepAlive(el)
 	return &sig
 }
 
@@ -90,7 +94,9 @@ func (sk *PrivateKey) G2Power(el *G2Element) *G2Element {
 func (sk *PrivateKey) Serialize() []byte {
 	ptr := C.CPrivateKeySerialize(sk.val)
 	defer C.SecFree(ptr)
-	return C.GoBytes(ptr, C.int(C.CPrivateKeySizeBytes()))
+	bytes := C.GoBytes(ptr, C.int(C.CPrivateKeySizeBytes()))
+	runtime.KeepAlive(sk)
+	return bytes
 }
 
 // PrivateKeyAggregate securely aggregates multiple private keys into one
@@ -102,13 +108,17 @@ func PrivateKeyAggregate(sks ...*PrivateKey) *PrivateKey {
 		val: C.CPrivateKeyAggregate(cPrivKeyArrPtr, C.size_t(len(sks))),
 	}
 	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.free() })
+	runtime.KeepAlive(sks)
 	return &sk
 }
 
 // EqualTo tests if one PrivateKey is equal to another
 // this method is the binding of the equality operation
 func (sk *PrivateKey) EqualTo(other *PrivateKey) bool {
-	return bool(C.CPrivateKeyIsEqual(sk.val, other.val))
+	isEqual := bool(C.CPrivateKeyIsEqual(sk.val, other.val))
+	runtime.KeepAlive(sk)
+	runtime.KeepAlive(other)
+	return isEqual
 }
 
 // HexString returns a hex string representation of serialized data

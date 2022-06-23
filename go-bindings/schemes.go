@@ -85,15 +85,19 @@ func (s *coreMPL) KeyGen(seed []byte) (*PrivateKey, error) {
 		return nil, errFromC()
 	}
 	runtime.SetFinalizer(&sk, func(sk *PrivateKey) { sk.free() })
+	runtime.KeepAlive(s)
 	return &sk, nil
 }
 
 // SkToG1 converts PrivateKey into G1Element (public key)
 // this method is a binding of bls::CoreMPL::SkToG1
 func (s *coreMPL) SkToG1(sk *PrivateKey) *G1Element {
-	return &G1Element{
+	el := &G1Element{
 		val: C.CCoreMPSkToG1(s.val, sk.val),
 	}
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sk)
+	return el
 }
 
 // Sign signs a message using a PrivateKey and returns the G2Element as a signature
@@ -105,6 +109,8 @@ func (s *coreMPL) Sign(sk *PrivateKey, msg []byte) *G2Element {
 		val: C.CCoreMPLSign(s.val, sk.val, cMsgPtr, C.size_t(len(msg))),
 	}
 	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sk)
 	return &sig
 }
 
@@ -114,6 +120,9 @@ func (s *coreMPL) Verify(pk *G1Element, msg []byte, sig *G2Element) bool {
 	cMsgPtr := C.CBytes(msg)
 	defer C.free(cMsgPtr)
 	isVerified := bool(C.CCoreMPLVerify(s.val, pk.val, cMsgPtr, C.size_t(len(msg)), sig.val))
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(pk)
+	runtime.KeepAlive(sig)
 	return isVerified
 }
 
@@ -126,6 +135,8 @@ func (s *coreMPL) AggregatePubKeys(pks ...*G1Element) *G1Element {
 		val: C.CCoreMPLAggregatePubKeys(s.val, cPkArrPtr, C.size_t(len(pks))),
 	}
 	runtime.SetFinalizer(&aggSig, func(aggSig *G1Element) { aggSig.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(pks)
 	return &aggSig
 }
 
@@ -139,6 +150,8 @@ func (s *coreMPL) AggregateSigs(sigs ...*G2Element) *G2Element {
 		val: C.CCoreMPLAggregateSigs(s.val, cSigArrPtr, C.size_t(len(sigs))),
 	}
 	runtime.SetFinalizer(&aggSig, func(aggSig *G2Element) { aggSig.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sigs)
 	return &aggSig
 }
 
@@ -149,6 +162,8 @@ func (s *coreMPL) DeriveChildSk(sk *PrivateKey, index int) *PrivateKey {
 		val: C.CCoreMPLDeriveChildSk(s.val, sk.val, C.uint32_t(index)),
 	}
 	runtime.SetFinalizer(&res, func(res *PrivateKey) { res.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sk)
 	return &res
 }
 
@@ -159,6 +174,8 @@ func (s *coreMPL) DeriveChildSkUnhardened(sk *PrivateKey, index int) *PrivateKey
 		val: C.CCoreMPLDeriveChildSkUnhardened(s.val, sk.val, C.uint32_t(index)),
 	}
 	runtime.SetFinalizer(&res, func(res *PrivateKey) { res.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sk)
 	return &res
 }
 
@@ -169,6 +186,8 @@ func (s *coreMPL) DeriveChildPkUnhardened(el *G1Element, index int) *G1Element {
 		val: C.CCoreMPLDeriveChildPkUnhardened(s.val, el.val, C.uint32_t(index)),
 	}
 	runtime.SetFinalizer(&res, func(res *G1Element) { res.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(el)
 	return &res
 }
 
@@ -189,6 +208,9 @@ func (s *coreMPL) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G2Elemen
 		C.size_t(len(msgs)),
 		sig.val,
 	)
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(pks)
+	runtime.KeepAlive(sig)
 	return bool(val)
 }
 
@@ -225,6 +247,9 @@ func (s *BasicSchemeMPL) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G
 		C.size_t(len(msgs)),
 		sig.val,
 	)
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(pks)
+	runtime.KeepAlive(sig)
 	return bool(val)
 }
 
@@ -260,6 +285,8 @@ func (s *AugSchemeMPL) Sign(sk *PrivateKey, msg []byte) *G2Element {
 		val: C.CAugSchemeMPLSign(s.val, sk.val, cMsgPtr, C.size_t(len(msg))),
 	}
 	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sk)
 	return &sig
 }
 
@@ -270,6 +297,9 @@ func (s *AugSchemeMPL) SignPrepend(sk *PrivateKey, msg []byte, prepPk *G1Element
 		val: C.CAugSchemeMPLSignPrepend(s.val, sk.val, C.CBytes(msg), C.size_t(len(msg)), prepPk.val),
 	}
 	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sk)
+	runtime.KeepAlive(prepPk)
 	return &sig
 }
 
@@ -279,6 +309,9 @@ func (s *AugSchemeMPL) Verify(pk *G1Element, msg []byte, sig *G2Element) bool {
 	cMsgPtr := C.CBytes(msg)
 	defer C.free(cMsgPtr)
 	val := C.CAugSchemeMPLVerify(s.val, pk.val, cMsgPtr, C.size_t(len(msg)), sig.val)
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(pk)
+	runtime.KeepAlive(sig)
 	return bool(val)
 }
 
@@ -298,6 +331,9 @@ func (s *AugSchemeMPL) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G2E
 		C.size_t(len(msgs)),
 		sig.val,
 	)
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(pks)
+	runtime.KeepAlive(sig)
 	return bool(val)
 }
 
@@ -331,13 +367,19 @@ func (s *PopSchemeMPL) PopProve(sk *PrivateKey) *G2Element {
 		val: C.CPopSchemeMPLPopProve(s.val, sk.val),
 	}
 	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(sk)
 	return &sig
 }
 
 // PopVerify verifies of a signature using proof of possession
 // this method is a binding of bls::PopSchemeMPL::PopVerify
 func (s *PopSchemeMPL) PopVerify(pk *G1Element, sig *G2Element) bool {
-	return bool(C.CPopSchemeMPLPopVerify(s.val, pk.val, sig.val))
+	isVerified := bool(C.CPopSchemeMPLPopVerify(s.val, pk.val, sig.val))
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(pk)
+	runtime.KeepAlive(sig)
+	return isVerified
 }
 
 // FastAggregateVerify uses for a fast verification
@@ -354,6 +396,9 @@ func (s *PopSchemeMPL) FastAggregateVerify(pks []*G1Element, msg []byte, sig *G2
 		C.size_t(len(msg)),
 		sig.val,
 	)
+	runtime.KeepAlive(s)
+	runtime.KeepAlive(pks)
+	runtime.KeepAlive(sig)
 	return bool(isVerified)
 }
 

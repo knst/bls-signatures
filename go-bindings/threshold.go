@@ -78,6 +78,7 @@ func ThresholdPrivateKeyShare(sks []*PrivateKey, hash Hash) (*PrivateKey, error)
 		return nil, errFromC()
 	}
 	runtime.SetFinalizer(&sk, func(pk *PrivateKey) { sk.free() })
+	runtime.KeepAlive(sks)
 	return &sk, nil
 }
 
@@ -97,6 +98,7 @@ func ThresholdPublicKeyShare(pks []*G1Element, hash Hash) (*G1Element, error) {
 		return nil, errFromC()
 	}
 	runtime.SetFinalizer(&pk, func(pk *G1Element) { pk.free() })
+	runtime.KeepAlive(pks)
 	return &pk, nil
 }
 
@@ -116,6 +118,7 @@ func ThresholdSignatureShare(sigs []*G2Element, hash Hash) (*G2Element, error) {
 		return nil, errFromC()
 	}
 	runtime.SetFinalizer(&sig, func(pk *G2Element) { sig.free() })
+	runtime.KeepAlive(sigs)
 	return &sig, nil
 }
 
@@ -141,6 +144,7 @@ func ThresholdPrivateKeyRecover(sks []*PrivateKey, hashes []Hash) (*PrivateKey, 
 		return nil, errFromC()
 	}
 	runtime.SetFinalizer(&sk, func(sk *PrivateKey) { sk.free() })
+	runtime.KeepAlive(sks)
 	return &sk, nil
 }
 
@@ -166,6 +170,7 @@ func ThresholdPublicKeyRecover(pks []*G1Element, hashes []Hash) (*G1Element, err
 		return nil, errFromC()
 	}
 	runtime.SetFinalizer(&pk, func(pk *G1Element) { pk.free() })
+	runtime.KeepAlive(pks)
 	return &pk, nil
 }
 
@@ -191,6 +196,7 @@ func ThresholdSignatureRecover(sigs []*G2Element, hashes []Hash) (*G2Element, er
 		return nil, errFromC()
 	}
 	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
+	runtime.KeepAlive(sigs)
 	return &sig, nil
 }
 
@@ -203,6 +209,7 @@ func ThresholdSign(sk *PrivateKey, hash Hash) *G2Element {
 		val: C.CThresholdSign(sk.val, cHashPtr),
 	}
 	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
+	runtime.KeepAlive(sk)
 	return &sig
 }
 
@@ -212,6 +219,8 @@ func ThresholdVerify(pk *G1Element, hash Hash, sig *G2Element) bool {
 	cHashPtr := C.CBytes(hash[:])
 	defer C.free(cHashPtr)
 	val := C.CThresholdVerify(pk.val, cHashPtr, sig.val)
+	runtime.KeepAlive(pk)
+	runtime.KeepAlive(sig)
 	return bool(val)
 }
 

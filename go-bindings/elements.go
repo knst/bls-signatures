@@ -56,19 +56,26 @@ func (g *G1Element) Mul(sk *PrivateKey) *G1Element {
 		val: C.CG1ElementMul(g.val, sk.val),
 	}
 	runtime.SetFinalizer(&el, func(el *G1Element) { el.free() })
+	runtime.KeepAlive(g)
+	runtime.KeepAlive(sk)
 	return &el
 }
 
 // EqualTo returns true if the elements are equal otherwise returns false
 // this method is the binding of the equality operation
 func (g *G1Element) EqualTo(el *G1Element) bool {
-	return bool(C.CG1ElementIsEqual(g.val, el.val))
+	val := bool(C.CG1ElementIsEqual(g.val, el.val))
+	runtime.KeepAlive(g)
+	runtime.KeepAlive(el)
+	return val
 }
 
 // IsValid returns true if a state of G1Element (public key) is valid
 // this method is the binding of the bls::G1Element::IsValid
 func (g *G1Element) IsValid() bool {
-	return bool(C.CG1ElementIsValid(g.val))
+	isValid := bool(C.CG1ElementIsValid(g.val))
+	runtime.KeepAlive(g)
+	return isValid
 }
 
 // Add performs addition operation on the passed G1Element (public key) and returns a new G1Element (public key)
@@ -78,13 +85,17 @@ func (g *G1Element) Add(el *G1Element) *G1Element {
 		val: C.CG1ElementAdd(g.val, el.val),
 	}
 	runtime.SetFinalizer(&res, func(res *G1Element) { res.free() })
+	runtime.KeepAlive(g)
+	runtime.KeepAlive(el)
 	return &res
 }
 
 // Fingerprint returns a fingerprint of G1Element (public key)
 // this method is a binding of the bls::G1Element::GetFingerprint
 func (g *G1Element) Fingerprint() int {
-	return int(C.CG1ElementGetFingerprint(g.val))
+	fp := int(C.CG1ElementGetFingerprint(g.val))
+	runtime.KeepAlive(g)
+	return fp
 }
 
 // Serialize serializes G1Element (public key) into a slice of bytes and returns it
@@ -92,7 +103,9 @@ func (g *G1Element) Fingerprint() int {
 func (g *G1Element) Serialize() []byte {
 	ptr := C.CG1ElementSerialize(g.val)
 	defer C.free(unsafe.Pointer(ptr))
-	return C.GoBytes(ptr, C.CG1ElementSize())
+	bytes := C.GoBytes(ptr, C.CG1ElementSize())
+	runtime.KeepAlive(g)
+	return bytes
 }
 
 // HexString returns a hex string representation of serialized data
@@ -131,6 +144,7 @@ func G2ElementFromBytes(data []byte) (*G2Element, error) {
 // this method is the binding of the equality operation
 func (g *G2Element) EqualTo(el *G2Element) bool {
 	isEqual := bool(C.CG2ElementIsEqual(g.val, el.val))
+	runtime.KeepAlive(g)
 	return isEqual
 }
 
@@ -141,6 +155,8 @@ func (g *G2Element) Add(el *G2Element) *G2Element {
 		val: C.CG2ElementAdd(g.val, el.val),
 	}
 	runtime.SetFinalizer(&res, func(res *G2Element) { res.free() })
+	runtime.KeepAlive(g)
+	runtime.KeepAlive(el)
 	return &res
 }
 
@@ -151,6 +167,8 @@ func (g *G2Element) Mul(sk *PrivateKey) *G2Element {
 		val: C.CG2ElementMul(g.val, sk.val),
 	}
 	runtime.SetFinalizer(&el, func(el *G2Element) { el.free() })
+	runtime.KeepAlive(g)
+	runtime.KeepAlive(sk)
 	return &el
 }
 
@@ -159,7 +177,9 @@ func (g *G2Element) Mul(sk *PrivateKey) *G2Element {
 func (g *G2Element) Serialize() []byte {
 	ptr := C.CG2ElementSerialize(g.val)
 	defer C.free(unsafe.Pointer(ptr))
-	return C.GoBytes(ptr, C.CG2ElementSize())
+	bytes := C.GoBytes(ptr, C.CG2ElementSize())
+	runtime.KeepAlive(g)
+	return bytes
 }
 
 // HexString returns a hex string representation of serialized data
