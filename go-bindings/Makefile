@@ -1,16 +1,12 @@
 SRC_DIR=$(PWD)/../src
 BUILD_DIR=$(PWD)/../build
-CACHE_DIR=$(PWD)/cache
-
-CGO_LDFLAGS="-L$(CACHE_DIR)/lib -lbls-dash -lrelic_s -lgmp"
-CGO_CXXFLAGS="-I$(CACHE_DIR)"
 
 GO="go"
 COVERAGE_OUTPUT ?= coverage.out
 
 .PHONY: default vet test clean
 
-default: prepare vet test clean
+default: vet test clean
 
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CURR_DIR := $(dir $(MAKEFILE_PATH))
