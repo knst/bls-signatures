@@ -31,8 +31,7 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
-        sudo apt-get install valgrind -y
-        sudo apt-get install snap -y
+        sudo apt-get install -qq --yes valgrind snap libgmp-dev libsodium-dev
         sudo apt-get remove --purge cmake -y
         sudo snap install cmake --classic
         hash -r

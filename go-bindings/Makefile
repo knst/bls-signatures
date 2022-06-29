@@ -15,12 +15,12 @@ default: prepare vet test clean
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CURR_DIR := $(dir $(MAKEFILE_PATH))
 
-CGO_LDFLAGS="-L$(CURR_DIR)../build/_deps/sodium-build \
+CGO_LDFLAGS ?= "-L$(CURR_DIR)../build/_deps/sodium-build \
 -L$(CURR_DIR)../build/_deps/relic-build/lib \
 -L$(CURR_DIR)../build/src \
 -lbls-dash -lrelic_s -lgmp"
 
-CGO_CXXFLAGS="-I$(CURR_DIR)../build/_deps/relic-src/include \
+CGO_CXXFLAGS ?= "-I$(CURR_DIR)../build/_deps/relic-src/include \
 -I$(CURR_DIR)../build/_deps/relic-build/include \
 -I$(CURR_DIR)../src"
 
