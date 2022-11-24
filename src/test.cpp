@@ -17,6 +17,11 @@
 #include <thread>
 
 #include "bls.hpp"
+
+// the define `MINSIGSTKSZ` can not be used in constexpr since glibc v2.35
+// this flag resolve constexpr issue for catch2 library
+// can be removed after upgrade to catch2 v2.13.5 or newer
+#define CATCH_CONFIG_NO_POSIX_SIGNALS
 #include <catch2/catch.hpp>
 
 extern "C" {
