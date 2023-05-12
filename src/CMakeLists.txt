@@ -34,6 +34,11 @@ target_link_libraries(dashbls
     mimalloc-static
 )
 
+if(WITH_COVERAGE)
+  target_compile_options(bls PRIVATE --coverage)
+  target_link_options(bls PRIVATE --coverage)
+endif()
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../depends/relic/include/ DESTINATION include/dashbls)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../depends/relic/include/ DESTINATION include/dashbls)
 install(FILES ${HEADERS} DESTINATION include/dashbls)
@@ -55,6 +60,10 @@ if(BUILD_BLS_TESTS)
     if(CMAKE_BUILD_TYPE MATCHES "Debug")
       target_link_options(runtest PRIVATE "SHELL:-s ASSERTIONS=2")
     endif()
+  endif()
+  if(WITH_COVERAGE)
+    target_compile_options(runtest PRIVATE --coverage)
+    target_link_options(runtest PRIVATE --coverage)
   endif()
 endif()
 
