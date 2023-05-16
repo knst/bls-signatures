@@ -254,6 +254,7 @@ G2Element G2Element::FromBytesUnchecked(Bytes const bytes, const bool fLegacy)
 
     if (fLegacy) {
         std::memcpy(buffer + 1, bytes.begin(), G2Element::SIZE);
+        buffer[0] = 0x00;
     } else {
         std::memcpy(buffer + 1, bytes.begin() + G2Element::SIZE / 2, G2Element::SIZE / 2);
         std::memcpy(buffer + 1 + G2Element::SIZE / 2, bytes.begin(), G2Element::SIZE / 2);
