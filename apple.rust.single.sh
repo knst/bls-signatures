@@ -1,5 +1,6 @@
 #!/bin/sh
 set -x
+set -e
 # "x86_64-apple-ios"
 # "x86_64-apple-ios-sim"
 # "aarch64-apple-ios"
