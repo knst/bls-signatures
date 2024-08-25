@@ -100,8 +100,8 @@ fn main() {
         .collect();
 
     include_paths.extend([
-        bls_dash_build_path.join("_deps/relic-src/include"),
-        bls_dash_build_path.join("_deps/relic-build/include"),
+        bls_dash_build_path.join("depends/relic-src/include"),
+        bls_dash_build_path.join("depends/relic/include"),
         bls_dash_build_path.join("src"),
         root_path.join("include/dashbls"),
         bls_dash_build_path.join("depends/relic/include"),
@@ -335,8 +335,8 @@ fn main() {
         .collect();
 
     include_paths.extend([
-        bls_dash_build_path.join(format!("relic-{}-{}/_deps/relic-src/include", platform, arch)),
-        bls_dash_build_path.join(format!("relic-{}-{}/_deps/relic-build/include", platform, arch)),
+        bls_dash_build_path.join(format!("relic-{}-{}/depends/relic-src/include", platform, arch)),
+        bls_dash_build_path.join(format!("relic-{}-{}/depends/relic/include", platform, arch)),
         bls_dash_build_path.join("contrib/relic/src"),
         root_path.join("src"),
         root_path.join("include/dashbls"),

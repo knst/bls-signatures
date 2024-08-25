@@ -311,7 +311,7 @@ build_bls_arch() {
     for F in "${BLS_FILES[@]}"
     do
         clang -I"../contrib/relic/include" \
-          -I"../relic-${PFX}/_deps/relic-build/include" \
+          -I"../relic-${PFX}/depends/relic/include" \
           -I"../../src/" \
           -I"../gmplib-${PFX}/include" \
           -x c++ -std=c++14 -stdlib=libc++ -fembed-bitcode -arch "${ARCH}" -isysroot "${SDK}" "${EXTRA_ARGS}" \
@@ -364,13 +364,13 @@ build_target() {
 #                "build/relic-${PFX}/_deps/relic-build/lib/librelic_s.a" \
 #                "build/bls-${PFX}/libbls.a"
     cp "build/gmplib-${PFX}/lib/libgmp.a" "build/artefacts/${BUILD_IN}"
-    cp "build/relic-${PFX}/_deps/relic-build/lib/librelic_s.a" "build/artefacts/${BUILD_IN}"
-    cp "build/relic-${PFX}/_deps/sodium-build/libsodium.a" "build/artefacts/${BUILD_IN}"
+    cp "build/relic-${PFX}/depends/relic-build/lib/librelic_s.a" "build/artefacts/${BUILD_IN}"
+    cp "build/relic-${PFX}/depends/sodium-build/libsodium.a" "build/artefacts/${BUILD_IN}"
     cp "build/bls-${PFX}/libbls.a" "build/artefacts/${BUILD_IN}"
     cp -rf build/bls-"${PFX}"/*.o build/artefacts/"${BUILD_IN}"/include
     cp -rf src/*.hpp build/artefacts/"${BUILD_IN}"/include
     cp -rf build/gmplib-"${PFX}"/include/gmp.h build/artefacts/"${BUILD_IN}"/include
-    cp -rf build/relic-"${PFX}"/_deps/relic-build/include/*.h build/artefacts/"${BUILD_IN}"/include
+    cp -rf build/relic-"${PFX}"/depends/relic/include/*.h build/artefacts/"${BUILD_IN}"/include
 }
 
 #make_relic_headers_universal() {

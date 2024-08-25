@@ -83,10 +83,10 @@ prepare() {
     download_relic() {
         CURRENT_DIR=$(pwd)
         echo "$CURRENT_DIR"
-        mkdir -p "${CURRENT_DIR}/${BUILD}/contrib"
-        if [ ! -s "${CURRENT_DIR}/${BUILD}/contrib/relic" ]; then
+        mkdir -p "${CURRENT_DIR}/${BUILD}/depends"
+        if [ ! -s "${CURRENT_DIR}/${BUILD}/depends/relic" ]; then
             # shellcheck disable=SC2039,SC2164
-            pushd "${CURRENT_DIR}/${BUILD}/contrib"
+            pushd "${CURRENT_DIR}/${BUILD}/depends"
             git clone --depth 1 --branch "feat/ios-support" https://github.com/pankcuf/relic
             # shellcheck disable=SC2039,SC2164
             pushd relic
@@ -95,7 +95,7 @@ prepare() {
             # shellcheck disable=SC2039,SC2164
             popd #relic
             # shellcheck disable=SC2039,SC2164
-            popd #contrib
+            popd #depends
         fi
     }
     rm -rf ${BUILD}
@@ -277,7 +277,7 @@ build_relic_arch() {
     # shellcheck disable=SC2039,SC2164
     popd # "$BUILDDIR"
     # shellcheck disable=SC2039,SC2164
-    popd # contrib/relic
+    popd # depends/relic
 }
 
 build_bls_arch() {
@@ -304,9 +304,9 @@ build_bls_arch() {
     # shellcheck disable=SC2039
     for F in "${BLS_FILES[@]}"
     do
-        clang -I"../contrib/relic/include" \
-          -I"../relic-${PFX}/_deps/relic-build/include" \
-          -I"../../src/" \
+        clang -I"../depends/relic/include" \
+          -I"../relic-${PFX}/depends/relic/include" \
+          -I"../../include/dashbls/" \
           -I"../gmplib-${PFX}/include" \
           -x c++ -std=c++14 -stdlib=libc++ -fembed-bitcode -arch "${ARCH}" -isysroot "${SDK}" "${EXTRA_ARGS}" \
           -c "../../src/${F}.cpp" -o "${F}.o"
@@ -364,12 +364,12 @@ build_all() {
             rm -rf "${ARCH_TARGET_DIR}"
             mkdir -p "${ARCH_TARGET_DIR}"
             #mv "${BUILD}/gmplib-${PFX}/lib/libgmp.a" "${ARCH_TARGET_DIR}/libgmp.a"
-            #mv "${BUILD}/relic-${PFX}/_deps/relic-build/lib/librelic_s.a" "${ARCH_TARGET_DIR}/librelic.a"
+            #mv "${BUILD}/relic-${PFX}/depends/relic/lib/librelic_s.a" "${ARCH_TARGET_DIR}/librelic.a"
             #mv "${BUILD}/bls-${PFX}/libbls.a" "${ARCH_TARGET_DIR}/libbls.a"
 
             libtool -static -o "${ARCH_TARGET_DIR}/libbls.a" \
               "${BUILD}/gmplib-${PFX}/lib/libgmp.a" \
-              "${BUILD}/relic-${PFX}/_deps/relic-build/lib/librelic_s.a" \
+              "${BUILD}/relic-${PFX}/depends/relic/lib/librelic_s.a" \
               "${BUILD}/bls-${PFX}/libbls.a"
 
             # shellcheck disable=SC2039
