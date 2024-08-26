@@ -362,7 +362,7 @@ build_target() {
     mkdir -p "build/artefacts/${BUILD_IN}"
     cp "build/gmplib-${PFX}/lib/libgmp.a" "build/artefacts/${BUILD_IN}"
     cp "build/relic-${PFX}/depends/relic/lib/librelic_s.a" "build/artefacts/${BUILD_IN}"
-    cp "build/relic-${PFX}/depends/sodium-build/libsodium.a" "build/artefacts/${BUILD_IN}"
+#    cp "build/relic-${PFX}/depends/sodium/libsodium.a" "build/artefacts/${BUILD_IN}"
     cp "build/bls-${PFX}/libbls.a" "build/artefacts/${BUILD_IN}"
 #    cp -rf build/bls-"${PFX}"/*.o build/artefacts/"${BUILD_IN}"/include
 #    cp -rf src/*.hpp build/artefacts/"${BUILD_IN}"/include
