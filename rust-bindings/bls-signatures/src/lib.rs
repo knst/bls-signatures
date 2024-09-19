@@ -101,4 +101,20 @@ mod tests {
             grandchild_sk_u.g1_element().expect("cannot get public key")
         );
     }
+
+    #[test]
+    fn test_bls_public_key() {
+        println!("ody");
+
+        let seed = b"seedweedseedweedseedweedseedweed";
+        let scheme = LegacySchemeMPL::new();
+
+        let private_key = PrivateKey::key_gen(&scheme, seed).expect("unable to generate private key");
+        let public_key = private_key.g1_element().expect("unable to get public key");
+
+        println!("private_key:{:?}", private_key.to_bytes().as_slice());
+        println!("public_key:{:?}", public_key.to_bytes().as_slice());
+
+        println!("ody done");
+    }
 }

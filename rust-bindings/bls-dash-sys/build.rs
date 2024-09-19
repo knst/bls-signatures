@@ -31,6 +31,7 @@ fn handle_command_output(output: Output) {
 
 #[cfg(not(feature = "apple"))]
 fn main() {
+    println!("cargo:warning=########## not APPLE Build");
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
     // TODO: fix build for wasm32 on MacOS
@@ -39,6 +40,7 @@ fn main() {
         println!("Build for wasm32 is not fully supported");
         return;
     }
+    println!("cargo:warning=########## Building bls-signatures for target: {}", target_arch);
 
     let root_path = Path::new("../..")
         .canonicalize()
@@ -196,6 +198,7 @@ fn main() {
 
         println!("cargo:rustc-link-lib=static=gmp");
     }
+    println!("cargo:warning=########## bls_dash_build_path:{}", bls_dash_build_path.display());
 
     // Generate rust code for c binding to src/lib.rs
     // println!("Generate C binding for rust:");
@@ -279,6 +282,7 @@ fn main() {
 
 #[cfg(feature = "apple")]
 fn main() {
+    println!("cargo:warning=########## APPLE Build");
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
     // TODO: fix build for wasm32 on MacOS
@@ -290,7 +294,7 @@ fn main() {
 
 
     let target = env::var("TARGET").unwrap();
-    println!("Building bls-signatures for apple target: {}", target);
+    println!("cargo:warning=########## Building bls-signatures for apple target: {}", target);
     let root_path = Path::new("../..")
         .canonicalize()
         .expect("can't get abs path");
@@ -320,6 +324,7 @@ fn main() {
         "aarch64-apple-darwin" => ("arm64", "macosx"),
         _ => panic!("Target {} not supported", target.as_str())
     };
+    println!("cargo:warning=########## arch:{} platform:{}", arch, platform);
     env::set_var("IPHONEOS_DEPLOYMENT_TARGET", "13.0");
 
     // Collect include paths
@@ -346,6 +351,8 @@ fn main() {
         bls_dash_src_path.clone(),
         bls_dash_src_include_path.clone()
     ]);
+   
+    println!("cargo:warning=########## target_path:{}", target_path.display());
 
     let cpp_files: Vec<_> = glob::glob(c_bindings_path.join("**/*.cpp").to_str().unwrap())
         .expect("can't get list of cpp files")
@@ -365,7 +372,7 @@ fn main() {
 
     println!("cargo:rustc-link-search={}", target_path.display());
     println!("cargo:rustc-link-lib=static=gmp");
-    // println!("cargo:rustc-link-lib=static=sodium");
+    //println!("cargo:rustc-link-lib=static=sodium");
     println!("cargo:rustc-link-lib=static=relic_s");
     println!("cargo:rustc-link-lib=static=bls");
     println!("cargo:rustc-link-search={}", bls_dash_src_path.display());

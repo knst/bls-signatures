@@ -52,7 +52,7 @@ version_min_flag() {
 
 prepare() {
     download_gmp() {
-        GMP_VERSION="6.2.1"
+        GMP_VERSION="6.3.0"
         CURRENT_DIR=$(pwd)
         echo "$CURRENT_DIR"
         # shellcheck disable=SC2039,SC2164
@@ -66,8 +66,8 @@ prepare() {
         pushd contrib
         tar xfj "gmp-${GMP_VERSION}.tar.bz2"
         mv gmp-${GMP_VERSION} gmp
-        rm gmp/compat.c && cp ../../contrib/gmp-patch-6.2.1/compat.c gmp/compat.c
-        rm gmp/longlong.h && cp ../../contrib/gmp-patch-6.2.1/longlong.h gmp/longlong.h
+        #rm gmp/compat.c && cp ../../contrib/gmp-patch-6.2.1/compat.c gmp/compat.c
+        #rm gmp/longlong.h && cp ../../contrib/gmp-patch-6.2.1/longlong.h gmp/longlong.h
         # shellcheck disable=SC2039,SC2164
         popd #contrib
         # shellcheck disable=SC2039,SC2164
@@ -116,7 +116,7 @@ build_gmp_arch() {
     ARCH=$2
     PFX=${PLATFORM}-${ARCH}
     # why this works with this host only?
-    HOST=arm-apple-darwin
+    HOST=aarch64-apple-darwin
     # shellcheck disable=SC2039,SC2164
     pushd ${BUILD}
     SDK=$(xcrun --sdk "$PLATFORM" --show-sdk-path)
@@ -144,7 +144,11 @@ CC="$CLANG" CFLAGS="$CFLAGS" CPPFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" \
 --host=${HOST} --prefix="${CURRENT_DIR}/gmplib-${PFX}" \
 --disable-shared --enable-static --disable-assembly -v
 EOF
-
+    echo "ODY"
+    echo CC="$CLANG" CFLAGS="$CFLAGS" CPPFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" \
+--host=${HOST} --prefix="${CURRENT_DIR}/gmplib-${PFX}" \
+--disable-shared --enable-static --disable-assembly -v
+    
     chmod a+x "$CONFIGURESCRIPT"
     sh "$CONFIGURESCRIPT"
     rm "$CONFIGURESCRIPT"
@@ -155,6 +159,8 @@ EOF
     make -j "$LOGICALCPU_MAX" &> "${CURRENT_DIR}"/log/gmplib-"${PFX}"-build.log
     # shellcheck disable=SC2039
     make install &> "${CURRENT_DIR}"/log/gmplib-"${PFX}"-install.log
+    #make check
+    #exit 1
     # shellcheck disable=SC2039,SC2164
     popd # gmp
     # shellcheck disable=SC2039,SC2164
