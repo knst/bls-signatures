@@ -265,15 +265,15 @@ build_relic_arch() {
         EXTRA_ARGS+=" -DARCH=X86"
     elif [[ $ARCH = "x86_64" ]]; then
         EXTRA_ARGS+=" -DARCH=X64"
-    else
-        EXTRA_ARGS+=" -DARCH=ARM"
-        if [[ $ARCH = "armv7s" ]]; then
-            EXTRA_ARGS+=" -DIOS_ARCH=armv7s"
-        elif [[ $ARCH = "armv7k" ]]; then
-            EXTRA_ARGS+=" -DIOS_ARCH=armv7k"
-        elif [[ $ARCH = "arm64_32" ]]; then
-            EXTRA_ARGS+=" -DIOS_ARCH=arm64_32"
-        fi
+    elif [[ $ARCH = "arm64" ]]; then
+       # Relic doesn't support aarch64 yet, "ARCH=ARM" is for ARM 32-bit architecture only
+       EXTRA_ARGS+=" -DIOS_ARCH=arm64 -DARCH="
+    elif [[ $ARCH = "armv7s" ]]; then
+        EXTRA_ARGS+=" -DIOS_ARCH=armv7s -DARCH=ARM"
+    elif [[ $ARCH = "armv7k" ]]; then
+        EXTRA_ARGS+=" -DIOS_ARCH=armv7k -DARCH=ARM"
+    elif [[ $ARCH = "arm64_32" ]]; then
+        EXTRA_ARGS+=" -DIOS_ARCH=arm64_32 -DARCH=ARM"
     fi
 
     CURRENT_DIR=$(pwd)
