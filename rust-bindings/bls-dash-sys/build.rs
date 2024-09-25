@@ -309,13 +309,54 @@ fn main() {
         fs::remove_dir_all(&bls_dash_build_path).expect("can't clean build directory");
     }
     fs::create_dir_all(&bls_dash_build_path).expect("can't create build directory");
+
+    let cc_path_output = Command::new("xcrun")
+        .arg("--sdk")
+        .arg("iphoneos")
+        .arg("--find")
+        .arg("clang")
+        .output()
+        .expect("Failed to find clang");
+    let cc_path = String::from_utf8_lossy(&cc_path_output.stdout).trim().to_string();
+
+    let cxx_path_output = Command::new("xcrun")
+        .arg("--sdk")
+        .arg("iphoneos")
+        .arg("--find")
+        .arg("clang++")
+        .output()
+        .expect("Failed to find clang++");
+    let cxx_path = String::from_utf8_lossy(&cxx_path_output.stdout).trim().to_string();
+
+    // Print the paths for clang and clang++
+    println!("cargo:warning=CC path: {}", cc_path);
+    println!("cargo:warning=CXX path: {}", cxx_path);
+
+    std::env::set_var("CC", cc_path);
+    std::env::set_var("CXX", cxx_path);
+    
+    println!("cargo:warning=########## ENV START");
+    for (key, value) in std::env::vars() {
+        println!("cargo:warning={} -> {}", key, value);
+    }
+    println!("cargo:warning=########## ENV STOP");
+
     let output = Command::new("sh")
         .current_dir(&root_path)
         .arg(script)
         .arg(target.as_str())
         .output()
         .expect("Failed to execute the shell script");
-    handle_command_output(output);
+    //handle_command_output(output);
+    // Print both stdout and stderr for better visibility
+    //println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    //eprintln!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+
+    println!("cargo:warning=########## stderr:{}", String::from_utf8_lossy(&output.stderr));
+    if !output.status.success() {
+        panic!("Script execution failed with status: {:?}", output.status);
+    }
+    println!("cargo:warning=########## TAKIS_THE_CAT ##########");
     let (arch, platform) = match target.as_str() {
         "x86_64-apple-ios" => ("x86_64", "iphonesimulator"),
         "aarch64-apple-ios" => ("arm64", "iphoneos"),
@@ -372,6 +413,8 @@ fn main() {
 
     println!("cargo:rustc-link-search={}", target_path.display());
     println!("cargo:rustc-link-lib=static=gmp");
+    //println!("cargo:rustc-link-lib=c++");
+    //println!("cargo:rustc-link-lib=c");
     //println!("cargo:rustc-link-lib=static=sodium");
     println!("cargo:rustc-link-lib=static=relic_s");
     println!("cargo:rustc-link-lib=static=bls");
