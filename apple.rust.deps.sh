@@ -144,7 +144,6 @@ CC="$CLANG" CFLAGS="$CFLAGS" CPPFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" \
 --host=${HOST} --prefix="${CURRENT_DIR}/gmplib-${PFX}" \
 --disable-shared --enable-static --disable-assembly -v
 EOF
-    echo "ODY"
     echo CC="$CLANG" CFLAGS="$CFLAGS" CPPFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" \
 --host=${HOST} --prefix="${CURRENT_DIR}/gmplib-${PFX}" \
 --disable-shared --enable-static --disable-assembly -v
