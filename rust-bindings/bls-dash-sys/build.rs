@@ -31,7 +31,6 @@ fn handle_command_output(output: Output) {
 
 #[cfg(not(feature = "apple"))]
 fn main() {
-    println!("cargo:warning=########## not APPLE Build");
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
     // TODO: fix build for wasm32 on MacOS
@@ -40,7 +39,7 @@ fn main() {
         println!("Build for wasm32 is not fully supported");
         return;
     }
-    println!("cargo:warning=########## Building bls-signatures for target: {}", target_arch);
+    println!("cargo:warning=Building bls-signatures for non-Apple target: {}", target_arch);
 
     let root_path = Path::new("../..")
         .canonicalize()
@@ -282,7 +281,6 @@ fn main() {
 
 #[cfg(feature = "apple")]
 fn main() {
-    println!("cargo:warning=########## APPLE Build");
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
     // TODO: fix build for wasm32 on MacOS
@@ -294,7 +292,7 @@ fn main() {
 
 
     let target = env::var("TARGET").unwrap();
-    println!("cargo:warning=########## Building bls-signatures for apple target: {}", target);
+    println!("cargo:warning=Building bls-signatures for Apple target: {}", target);
     let root_path = Path::new("../..")
         .canonicalize()
         .expect("can't get abs path");
@@ -334,12 +332,6 @@ fn main() {
 
     std::env::set_var("CC", cc_path);
     std::env::set_var("CXX", cxx_path);
-    
-    println!("cargo:warning=########## ENV START");
-    for (key, value) in std::env::vars() {
-        println!("cargo:warning={} -> {}", key, value);
-    }
-    println!("cargo:warning=########## ENV STOP");
 
     let output = Command::new("sh")
         .current_dir(&root_path)
@@ -347,16 +339,8 @@ fn main() {
         .arg(target.as_str())
         .output()
         .expect("Failed to execute the shell script");
-    //handle_command_output(output);
-    // Print both stdout and stderr for better visibility
-    //println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-    //eprintln!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+    handle_command_output(output);
 
-    println!("cargo:warning=########## stderr:{}", String::from_utf8_lossy(&output.stderr));
-    if !output.status.success() {
-        panic!("Script execution failed with status: {:?}", output.status);
-    }
-    println!("cargo:warning=########## TAKIS_THE_CAT ##########");
     let (arch, platform) = match target.as_str() {
         "x86_64-apple-ios" => ("x86_64", "iphonesimulator"),
         "aarch64-apple-ios" => ("arm64", "iphoneos"),
@@ -365,7 +349,6 @@ fn main() {
         "aarch64-apple-darwin" => ("arm64", "macosx"),
         _ => panic!("Target {} not supported", target.as_str())
     };
-    println!("cargo:warning=########## arch:{} platform:{}", arch, platform);
     env::set_var("IPHONEOS_DEPLOYMENT_TARGET", "13.0");
 
     // Collect include paths
@@ -392,8 +375,6 @@ fn main() {
         bls_dash_src_path.clone(),
         bls_dash_src_include_path.clone()
     ]);
-   
-    println!("cargo:warning=########## target_path:{}", target_path.display());
 
     let cpp_files: Vec<_> = glob::glob(c_bindings_path.join("**/*.cpp").to_str().unwrap())
         .expect("can't get list of cpp files")
