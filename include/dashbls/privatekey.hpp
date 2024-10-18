@@ -17,6 +17,7 @@
 
 #include "relic_conf.h"
 
+#include <iosfwd>
 #if defined GMP && ARITH == GMP
 #include <gmp.h>
 #endif

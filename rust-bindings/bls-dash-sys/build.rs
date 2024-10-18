@@ -42,15 +42,34 @@ fn main() {
     }
     println!("cargo:warning=Building bls-signatures for non-Apple target: {}", target_arch);
 
+fn strip_prefix(path: &Path) -> &Path {
+    // On Windows, canonicalize() returns paths with the `\\?\` prefix,
+    // which cmd.exe and other tools do not handle well.
+    if cfg!(windows) {
+        let path_str = path.to_str().unwrap();
+        if path_str.starts_with(r"\\?\") {
+            return Path::new(&path_str[4..]);
+        }
+    }
+    path
+}
+
+       let canonical_path = fs::canonicalize("../..").unwrap(); // Store the PathBuf in a variable
+       let root = strip_prefix(&canonical_path); // Now, root has a valid reference
+//     let root = strip_prefix(&fs::canonicalize("..").unwrap());
+       let bls_dash_build_path = root.join("build");
+       let bls_dash_src_path = root.join("src");
+
     let root_path = Path::new("../..")
         .canonicalize()
         .expect("can't get abs path");
 
-    let bls_dash_build_path = root_path.join("build");
-    let bls_dash_src_path = root_path.join("src");
+   // let bls_dash_build_path = root_path.join("build").canonicalize().expect("dfdf");
+   // let bls_dash_src_path = root_path.join("src").canonicalize().expect("dfdf");
     let c_bindings_path = root_path.join("rust-bindings/bls-dash-sys/c-bindings");
 
-    println!("root {}", root_path.display());
+    println!("root {}", root.display());
+    println!("root_path {}", root_path.display());
     println!("bls_dash_build_path {}", bls_dash_build_path.display());
     println!("bls_dash_src_path {}", bls_dash_src_path.display());
     // println!("c_bindings_path {}", c_bindings_path.display());
@@ -71,8 +90,13 @@ fn main() {
 
     cmake_command
         .current_dir(&bls_dash_build_path)
+        .arg("-G=MinGW Makefiles")
+               .arg("-DCMAKE_C_COMPILER=gcc")
+               .arg("-DCMAKE_CXX_COMPILER=g++")
+        .arg("-DBUILD_BLS_PYTHON_BINDINGS=0")
         .arg("-DBUILD_BLS_PYTHON_BINDINGS=0")
         .arg("-DBUILD_BLS_TESTS=0")
+               .arg("-DCMAKE_USE_RELATIVE_PATHS=ON")
         .arg("-DBUILD_BLS_BENCHMARKS=0")
         .arg("-DBUILD_BLS_JS_BINDINGS=0");
 
@@ -146,7 +170,7 @@ fn main() {
         bls_dash_build_path.join("depends/mimalloc/include"),
         root_path.join("depends/relic/include"),
         root_path.join("depends/mimalloc/include"),
-        bls_dash_src_path.clone(),
+        bls_dash_src_path.to_path_buf().clone(),
     ]);
 
     // Build c binding
