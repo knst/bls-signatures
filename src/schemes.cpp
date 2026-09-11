@@ -153,22 +153,22 @@ bool CoreMPL::Verify(
     const Bytes& message,
     const G2Element& signature)
 {
-    blst_p1_affine pubkeyAffine;
-    blst_p2_affine sigAffine;
+    // Keep the relic-era semantics rather than blst_core_verify: elements are
+    // gated by IsValid() (which accepts infinity) and the check is the product
+    // of pairings, so e.g. an infinity pubkey with an infinity signature
+    // verifies as it always did.
+    const G2Element hashedPoint = G2Element::FromMessage(message, (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length());
 
-    pubkey.ToAffine(&pubkeyAffine);
-    signature.ToAffine(&sigAffine);
+    if (!pubkey.IsValid()) {
+        return false;
+    }
+    if (!signature.IsValid()) {
+        return false;
+    }
 
-    auto err = blst_core_verify_pk_in_g1(
-        &pubkeyAffine,
-        &sigAffine,
-        true, /*hash*/
-        message.begin(),
-        message.size(),
-        (const uint8_t*)strCiphersuiteId.c_str(),
-        strCiphersuiteId.length());
-
-    return err == BLST_SUCCESS;
+    const std::vector<G1Element> g1s{G1Element::Generator().Negate(), pubkey};
+    const std::vector<G2Element> g2s{signature, hashedPoint};
+    return CoreMPL::NativeVerify(g1s, g2s);
 }
 
 std::array<uint8_t, G2Element::SIZE> CoreMPL::Aggregate(const vector<vector<uint8_t>> &signatures)
@@ -332,55 +332,60 @@ bool CoreMPL::AggregateVerify(
         return arg_check;
     }
 
-    blst_pairing* ctx = (blst_pairing*)malloc(blst_pairing_sizeof());
-    blst_pairing_init(
-        ctx,
-        true /*hash*/,
-        (const uint8_t*)strCiphersuiteId.c_str(),
-        strCiphersuiteId.length());
+    if (!signature.IsValid()) {
+        return false;
+    }
+    std::vector<G1Element> vecG1;
+    std::vector<G2Element> vecG2;
+    vecG1.reserve(nPubKeys + 1);
+    vecG2.reserve(nPubKeys + 1);
+    vecG1.push_back(G1Element::Generator().Negate());
+    vecG2.push_back(signature);
 
-    blst_p1_affine pk_affine;
-    blst_p2_affine sig_affine;
-    blst_fp12 gtsig;
-
-    signature.ToAffine(&sig_affine);
-
-    blst_aggregated_in_g2(&gtsig, &sig_affine);
-
-    for (size_t i = 0; i < nPubKeys; i++) {
-        pubkeys[i].ToAffine(&pk_affine);
-
-        auto err = blst_pairing_aggregate_pk_in_g1(
-            ctx, &pk_affine, nullptr, messages[i].begin(), messages[i].size());
-
-        if (err != BLST_SUCCESS) {
-            free(ctx);
+    for (size_t i = 0; i < nPubKeys; ++i) {
+        if (!pubkeys[i].IsValid()) {
             return false;
         }
+        vecG1.push_back(pubkeys[i]);
+        vecG2.push_back(G2Element::FromMessage(messages[i], (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length()));
     }
 
-    blst_pairing_commit(ctx);
-    auto ret = blst_pairing_finalverify(ctx, &gtsig);
-    free(ctx);
-    return ret;
+    return CoreMPL::NativeVerify(vecG1, vecG2);
 }
 
-bool CoreMPL::NativeVerify(const blst_p1_affine* pubkeys,
-                           const blst_p2_affine* mappedHashes,
-                           size_t length)
+bool CoreMPL::NativeVerify(const std::vector<G1Element>& g1s,
+                           const std::vector<G2Element>& g2s)
 {
-    // 1 =? prod e(pubkey[i], hash[i])
+    // 1 =? prod e(g1s[i], g2s[i])
     // A pairing with the point at infinity on either side contributes the
     // identity, matching relic's pc_map_sim.
+    if (g1s.size() != g2s.size()) {
+        return false;
+    }
     blst_fp12 candidate = *blst_fp12_one();
 
-    for (size_t i = 0; i < length; ++i) {
-        if (blst_p1_affine_is_inf(&pubkeys[i]) ||
-            blst_p2_affine_is_inf(&mappedHashes[i])) {
+    for (size_t i = 0; i < g1s.size(); ++i) {
+        blst_p1 p;
+        blst_p2 q;
+        g1s[i].ToNative(&p);
+        g2s[i].ToNative(&q);
+        // Infinity is decided on the projective points: blst's affine form
+        // cannot tell (0, 0) apart from infinity.
+        if (blst_p1_is_inf(&p) || blst_p2_is_inf(&q)) {
             continue;
         }
+        blst_p1_affine a;
+        blst_p2_affine b;
+        blst_p1_to_affine(&a, &p);
+        blst_p2_to_affine(&b, &q);
+        // A point that is not infinity but reads as (0, 0) in affine form is
+        // a degenerate legacy decode. relic paired it as an ordinary point
+        // and the check failed; it must not be skipped as infinity here.
+        if (blst_p1_affine_is_inf(&a) || blst_p2_affine_is_inf(&b)) {
+            return false;
+        }
         blst_fp12 tmpPairing;
-        blst_miller_loop(&tmpPairing, &mappedHashes[i], &pubkeys[i]);
+        blst_miller_loop(&tmpPairing, &b, &a);
         blst_fp12_mul(&candidate, &candidate, &tmpPairing);
     }
 
@@ -656,13 +661,9 @@ bool PopSchemeMPL::PopVerify(
     if (!signature_proof.IsValid()) {
         return false;
     }
-    std::array<blst_p1_affine, 2> g1s;
-    std::array<blst_p2_affine, 2> g2s;
-    G1Element::Generator().Negate().ToAffine(&g1s[0]);
-    pubkey.ToAffine(&g1s[1]);
-    signature_proof.ToAffine(&g2s[0]);
-    hashedPoint.ToAffine(&g2s[1]);
-    return CoreMPL::NativeVerify(g1s.data(), g2s.data(), 2);
+    const std::vector<G1Element> g1s{G1Element::Generator().Negate(), pubkey};
+    const std::vector<G2Element> g2s{signature_proof, hashedPoint};
+    return CoreMPL::NativeVerify(g1s, g2s);
 }
 
 bool PopSchemeMPL::PopVerify(
@@ -736,15 +737,9 @@ G2Element LegacySchemeMPL::Sign(const PrivateKey& seckey, const Bytes& message)
 
 bool LegacySchemeMPL::Verify(const G1Element &pubkey, const Bytes& message, const G2Element &signature)
 {
-    blst_p1_affine g1s[2];
-    blst_p2_affine g2s[2];
-
-    G1Element::Generator().Negate().ToAffine(&g1s[0]);
-    pubkey.ToAffine(&g1s[1]);
-    signature.ToAffine(&g2s[0]);
-    G2Element::FromMessage(message, nullptr, 0, true).ToAffine(&g2s[1]);
-
-    return CoreMPL::NativeVerify(g1s, g2s, 2);
+    const std::vector<G1Element> g1s{G1Element::Generator().Negate(), pubkey};
+    const std::vector<G2Element> g2s{signature, G2Element::FromMessage(message, nullptr, 0, true)};
+    return CoreMPL::NativeVerify(g1s, g2s);
 }
 
 G2Element LegacySchemeMPL::AggregateSecure(std::vector<G1Element> const &vecPublicKeys,
@@ -767,17 +762,17 @@ bool LegacySchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
     const auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
     if (arg_check != CONTINUE) return arg_check;
 
-    std::vector<blst_p1_affine> vecG1(nPubKeys + 1);
-    std::vector<blst_p2_affine> vecG2(nPubKeys + 1);
-    G1Element::Generator().Negate().ToAffine(&vecG1[0]);
-    signature.ToAffine(&vecG2[0]);
-
+    std::vector<G1Element> vecG1;
+    std::vector<G2Element> vecG2;
+    vecG1.reserve(nPubKeys + 1);
+    vecG2.reserve(nPubKeys + 1);
+    vecG1.push_back(G1Element::Generator().Negate());
+    vecG2.push_back(signature);
     for (size_t i = 0; i < nPubKeys; ++i) {
-        pubkeys[i].ToAffine(&vecG1[i + 1]);
-        G2Element::FromMessage(messages[i], nullptr, 0, true).ToAffine(&vecG2[i + 1]);
+        vecG1.push_back(pubkeys[i]);
+        vecG2.push_back(G2Element::FromMessage(messages[i], nullptr, 0, true));
     }
-
-    return CoreMPL::NativeVerify(vecG1.data(), vecG2.data(), nPubKeys + 1);
+    return CoreMPL::NativeVerify(vecG1, vecG2);
 }
 
 }  // end namespace bls
