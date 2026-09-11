@@ -23,6 +23,10 @@
 #include <vector>
 #include <array>
 
+extern "C" {
+#include "bindings/blst.h"
+}
+
 namespace bls {
 
 class BLS;
@@ -66,9 +70,9 @@ class Util {
 
 static void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
     int key_len) {
-  #define block_size 64
-  #define RLC_MD_LEN 32
-    uint8_t opad[block_size + RLC_MD_LEN];
+    constexpr int block_size = 64;
+    constexpr int md_len = 32;
+    uint8_t opad[block_size + md_len];
     uint8_t *ipad = (uint8_t *)malloc(block_size + in_len);
     uint8_t _key[block_size];
 
@@ -78,7 +82,7 @@ static void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *
     if (key_len > block_size) {
         Hash256(_key, key, key_len);
         key = _key;
-        key_len = RLC_MD_LEN;
+        key_len = md_len;
     }
 
     memcpy(_key, key, key_len);
@@ -91,7 +95,7 @@ static void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *
     }
     memcpy(ipad + block_size, in, in_len);
     Hash256(opad + block_size, ipad, block_size + in_len);
-    Hash256(mac, opad, block_size + RLC_MD_LEN);
+    Hash256(mac, opad, block_size + md_len);
 
     free(ipad);
 }
