@@ -737,6 +737,10 @@ G2Element LegacySchemeMPL::Sign(const PrivateKey& seckey, const Bytes& message)
 
 bool LegacySchemeMPL::Verify(const G1Element &pubkey, const Bytes& message, const G2Element &signature)
 {
+    // the legacy scheme is defined on 32-byte message hashes
+    if (message.size() != BLS::MESSAGE_HASH_LEN) {
+        return false;
+    }
     const std::vector<G1Element> g1s{G1Element::Generator().Negate(), pubkey};
     const std::vector<G2Element> g2s{signature, G2Element::FromMessage(message, nullptr, 0, true)};
     return CoreMPL::NativeVerify(g1s, g2s);
@@ -769,6 +773,10 @@ bool LegacySchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
     vecG1.push_back(G1Element::Generator().Negate());
     vecG2.push_back(signature);
     for (size_t i = 0; i < nPubKeys; ++i) {
+        // the legacy scheme is defined on 32-byte message hashes
+        if (messages[i].size() != BLS::MESSAGE_HASH_LEN) {
+            return false;
+        }
         vecG1.push_back(pubkeys[i]);
         vecG2.push_back(G2Element::FromMessage(messages[i], nullptr, 0, true));
     }
