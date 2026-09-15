@@ -826,6 +826,10 @@ G2Element LegacySchemeMPL::Sign(const PrivateKey& seckey, const Bytes& message)
 
 bool LegacySchemeMPL::Verify(const G1Element &pubkey, const Bytes& message, const G2Element &signature)
 {
+    // the legacy scheme is defined on 32-byte message hashes
+    if (message.size() != BLS::MESSAGE_HASH_LEN) {
+        return false;
+    }
     if (!pubkey.IsValid() || pubkey == G1Element()) {
         return false;
     }
@@ -867,6 +871,10 @@ bool LegacySchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
     vecG1.push_back(G1Element::Generator().Negate());
     vecG2.push_back(signature);
     for (size_t i = 0; i < nPubKeys; ++i) {
+        // the legacy scheme is defined on 32-byte message hashes
+        if (messages[i].size() != BLS::MESSAGE_HASH_LEN) {
+            return false;
+        }
         if (!pubkeys[i].IsValid() || pubkeys[i] == G1Element()) {
             return false;
         }
