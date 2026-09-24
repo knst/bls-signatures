@@ -320,7 +320,9 @@ bool G1Element::IsValid() const
     if (blst_p1_is_inf(&p))
         return true;
 
-    return blst_p1_in_g1(&p);
+    // blst_p1_in_g1 assumes a point on the curve; relic's g1_is_valid
+    // checked both
+    return blst_p1_on_curve(&p) && blst_p1_in_g1(&p);
 }
 
 void G1Element::CheckValid() const
@@ -569,7 +571,7 @@ bool G2Element::IsValid() const
     if (blst_p2_is_inf(&q))
         return true;
 
-    return blst_p2_in_g2(&q);
+    return blst_p2_on_curve(&q) && blst_p2_in_g2(&q);
 }
 
 void G2Element::CheckValid() const
