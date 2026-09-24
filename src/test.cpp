@@ -1717,6 +1717,33 @@ TEST_CASE("CheckValid")
     }
 }
 
+TEST_CASE("IsValid rejects points off the curve")
+{
+    // (4x, 8y, z) of the generator is not on the curve but passes blst's
+    // subgroup test, which assumes a curve point
+    uint8_t be[48] = {0};
+    blst_fp four, eight;
+    be[47] = 4;
+    blst_fp_from_bendian(&four, be);
+    be[47] = 8;
+    blst_fp_from_bendian(&eight, be);
+
+    blst_p1 off1 = *blst_p1_generator();
+    blst_fp_mul(&off1.x, &off1.x, &four);
+    blst_fp_mul(&off1.y, &off1.y, &eight);
+    REQUIRE(!G1Element::FromNative(off1).IsValid());
+
+    blst_p2 off2 = *blst_p2_generator();
+    blst_fp2 four2, eight2;
+    memset(&four2, 0, sizeof(four2));
+    memset(&eight2, 0, sizeof(eight2));
+    four2.fp[0] = four;
+    eight2.fp[0] = eight;
+    blst_fp2_mul(&off2.x, &off2.x, &four2);
+    blst_fp2_mul(&off2.y, &off2.y, &eight2);
+    REQUIRE(!G2Element::FromNative(off2).IsValid());
+}
+
 TEST_CASE("CheckValid for Legacy")
 {
     SECTION("Invalid G1 points should throw in CheckValid but not in FromBytes")
