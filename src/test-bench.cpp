@@ -168,7 +168,8 @@ void benchSerializeToArray() {
     endStopwatch("SerializeToArray G2Element", start, numIters);
 }
 
-int main(int argc, char* argv[]) {
+int main()
+{
     benchSigs();
     benchVerification();
     benchBatchVerification();
