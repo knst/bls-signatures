@@ -228,23 +228,23 @@ class LegacySchemeMPL final : public CoreMPL {
 public:
     LegacySchemeMPL() : CoreMPL(std::string{}) {}
 
-    virtual vector<uint8_t> SkToPk(const PrivateKey &seckey) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    virtual vector<uint8_t> SkToPk(const PrivateKey &) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
 
-    G2Element Sign(const PrivateKey &seckey, const vector<uint8_t> &message) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    G2Element Sign(const PrivateKey &, const vector<uint8_t> &) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
     G2Element Sign(const PrivateKey &seckey, const Bytes& message) final;
 
-    bool Verify(const vector<uint8_t>& pubkey,
-                const vector<uint8_t>& message,
-                const vector<uint8_t>& signature) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    bool Verify(const vector<uint8_t>&,
+                const vector<uint8_t>&,
+                const vector<uint8_t>&) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
 
-    bool Verify(const G1Element& pubkey,
-                const vector<uint8_t>& message,
-                const G2Element& signature) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    bool Verify(const G1Element&,
+                const vector<uint8_t>&,
+                const G2Element&) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
 
-    bool Verify(const Bytes& pubkey, const Bytes& message, const Bytes& signature) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    bool Verify(const Bytes&, const Bytes&, const Bytes&) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
     bool Verify(const G1Element &pubkey, const Bytes& message, const G2Element &signature) final;
 
-    std::array<uint8_t, G2Element::SIZE> Aggregate(const vector<vector<uint8_t>> &signatures) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    std::array<uint8_t, G2Element::SIZE> Aggregate(const vector<vector<uint8_t>> &) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
 
     G2Element AggregateSecure(const std::vector<G1Element>& vecPublicKeys,
                               const std::vector<G2Element>& vecSignatures,
@@ -254,17 +254,17 @@ public:
                       const G2Element& signature,
                       const Bytes& message) final;
 
-    bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
-                         const vector<vector<uint8_t>> &messages,
-                         const vector<uint8_t> &signature) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    bool AggregateVerify(const vector<vector<uint8_t>> &,
+                         const vector<vector<uint8_t>> &,
+                         const vector<uint8_t> &) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
 
-    bool AggregateVerify(const vector<Bytes> &pubkeys,
-                         const vector<Bytes> &messages,
-                         const Bytes &signature) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    bool AggregateVerify(const vector<Bytes> &,
+                         const vector<Bytes> &,
+                         const Bytes &) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
 
-    bool AggregateVerify(const vector<G1Element> &pubkeys,
-                         const vector<vector<uint8_t>> &messages,
-                         const G2Element &signature) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
+    bool AggregateVerify(const vector<G1Element> &,
+                         const vector<vector<uint8_t>> &,
+                         const G2Element &) final { throw std::runtime_error("Not supported in LegacySchemeMPL"); }
 
     bool AggregateVerify(const vector<G1Element> &pubkeys,
                          const vector<Bytes> &messages,

@@ -232,7 +232,7 @@ G1Element CoreMPL::Aggregate(const vector<G1Element> &publicKeys)
 
 G2Element CoreMPL::AggregateSecure(std::vector<G1Element> const &vecPublicKeys,
                                    std::vector<G2Element> const &vecSignatures,
-                                   const Bytes& message,
+                                   const Bytes& /*message*/,
                                    const bool fLegacy) {
     if (vecSignatures.size() != vecPublicKeys.size()) {
         throw std::invalid_argument("LegacySchemeMPL::AggregateSigs sigs.size() != pubKeys.size()");
