@@ -277,7 +277,7 @@ G1Element G1Element::FromAffine(const blst_p1_affine& element)
 G1Element G1Element::FromMessage(
     const std::vector<uint8_t>& message,
     const uint8_t* dst,
-    int dst_len)
+    size_t dst_len)
 {
     return FromMessage(Bytes(message), dst, dst_len);
 }
@@ -285,7 +285,7 @@ G1Element G1Element::FromMessage(
 G1Element G1Element::FromMessage(
     Bytes const message,
     const uint8_t* dst,
-    int dst_len)
+    size_t dst_len)
 {
     G1Element ans;
     const byte* aug = nullptr;
@@ -294,7 +294,7 @@ G1Element G1Element::FromMessage(
     blst_hash_to_g1(
         &(ans.p),
         message.begin(),
-        (int)message.size(),
+        message.size(),
         dst,
         dst_len,
         aug,
@@ -523,7 +523,7 @@ G2Element G2Element::FromAffine(const blst_p2_affine& element)
 G2Element G2Element::FromMessage(
     const std::vector<uint8_t>& message,
     const uint8_t* dst,
-    int dst_len,
+    size_t dst_len,
     const bool fLegacy)
 {
     return FromMessage(Bytes(message), dst, dst_len, fLegacy);
@@ -532,7 +532,7 @@ G2Element G2Element::FromMessage(
 G2Element G2Element::FromMessage(
     Bytes const message,
     const uint8_t* dst,
-    int dst_len,
+    size_t dst_len,
     const bool fLegacy)
 {
     G2Element ans;
@@ -545,7 +545,7 @@ G2Element G2Element::FromMessage(
         blst_hash_to_g2(
             &(ans.q),
             message.begin(),
-            (int)message.size(),
+            message.size(),
             dst,
             dst_len,
             aug,
