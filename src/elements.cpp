@@ -294,7 +294,7 @@ G1Element G1Element::FromMessage(
     blst_hash_to_g1(
         &(ans.p),
         message.begin(),
-        (int)message.size(),
+        message.size(),
         dst,
         dst_len,
         aug,
@@ -545,7 +545,7 @@ G2Element G2Element::FromMessage(
         blst_hash_to_g2(
             &(ans.q),
             message.begin(),
-            (int)message.size(),
+            message.size(),
             dst,
             dst_len,
             aug,
