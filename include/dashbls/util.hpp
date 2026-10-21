@@ -80,8 +80,8 @@ class Util {
     }
 
     /*
-     * Securely allocates a portion of memory, using libsodium. This prevents
-     * paging to disk, and zeroes out the memory when it's freed.
+     * Securely allocates a portion of memory. This prevents paging to disk,
+     * and zeroes out the memory when it's freed.
      */
     template<class T>
     static T* SecAlloc(size_t numTs) {
