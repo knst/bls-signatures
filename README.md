@@ -17,7 +17,7 @@ the [`relic`](https://github.com/relic-toolkit/relic) toolkit with bindings avai
 ## Dependencies
 
 * A C++17 capable compiler (GCC 9, Clang 7 or higher)
-* CMake 3.18 or higher (or Autoconf 2.71 or higher; with libtool and automake)
+* CMake 3.18 or higher
 * [`libgmp`](https://gmplib.org/) (for fast arithmetic, **optional**)
 
 Additionally, the following dependencies are supplied by the codebase

@@ -18,10 +18,6 @@
 #include "mimalloc.h"
 #endif
 
-#if BLSALLOC_SODIUM
-#include "sodium.h"
-#endif
-
 namespace bls {
 
 const size_t BLS::MESSAGE_HASH_LEN;
@@ -51,11 +47,6 @@ bool BLS::Init()
     }
 #if BLSALLOC_MIMALLOC
     SetSecureAllocator(mi_malloc, mi_free);
-#elif BLSALLOC_SODIUM
-    if (sodium_init() < 0) {
-        throw std::runtime_error("libsodium init failed");
-    }
-    SetSecureAllocator(sodium_malloc, sodium_free);
 #else
     SetSecureAllocator(malloc, free);
 #endif

@@ -186,14 +186,6 @@ fn main() {
 
     cc.compile("bls-dash-sys");
 
-    // // Link dependencies
-    // println!(
-    //     "cargo:rustc-link-search={}",
-    //     bls_dash_build_path.join("_deps/sodium-build").display()
-    // );
-
-    // println!("cargo:rustc-link-lib=static=sodium");
-
     println!(
         "cargo:rustc-link-search={}",
         root_path.join("build/depends/relic/lib").display()
@@ -312,7 +304,6 @@ fn main() {
 //     }
 //     println!("cargo:rustc-link-search={}", target_path.display());
 //     println!("cargo:rustc-link-lib=static=gmp");
-//     println!("cargo:rustc-link-lib=static=sodium");
 //     println!("cargo:rustc-link-lib=static=relic_s");
 //     println!("cargo:rustc-link-search={}", bls_dash_build_path.join("src").display());
 //     println!("cargo:rustc-link-lib=static=bls");
@@ -436,7 +427,6 @@ fn main() {
     println!("cargo:rustc-link-lib=static=gmp");
     //println!("cargo:rustc-link-lib=c++");
     //println!("cargo:rustc-link-lib=c");
-    //println!("cargo:rustc-link-lib=static=sodium");
     println!("cargo:rustc-link-lib=static=relic_s");
     println!("cargo:rustc-link-lib=static=bls");
     println!("cargo:rustc-link-search={}", bls_dash_src_path.display());
